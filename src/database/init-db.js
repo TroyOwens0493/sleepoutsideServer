@@ -66,11 +66,7 @@ const seedProducts = async (db) => {
   // use .map() to transform each product before inserting it into the database
   // change Reviews.ReviewUrl to match the following pattern: /products/<productId>/reviews/
   // while we are at it...the data provided used a PascalCase naming convention for its keys. Use the provided lowerCaseKeys function to convert all keys to camelCase. This will make it consistent with the rest of our models.
-  const newProducts = products.map((product) => {
-    product.Reviews.ReviewsUrl = `/products/${product.Id}/reviews/`;
-    product = lowerCaseKeys(product);
-    return product;
-  });
+  const newProducts = lowerCaseKeys(products);
   try {
     // drop the collection to clear out the old records
     await db.collection("products").drop();
