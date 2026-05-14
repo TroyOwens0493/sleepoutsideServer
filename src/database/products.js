@@ -6,7 +6,7 @@ export const products = [
     IsNew: false,
     Url: "/products/14gvf/",
     Reviews: {
-      ReviewsUrl: "/products/<productId>/reviews/",
+      ReviewsUrl: "/products/${Id}/reviews/",
       ReviewCount: 0,
       AverageRating: 0,
     },
