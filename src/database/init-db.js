@@ -77,8 +77,18 @@ const seedProducts = async (db) => {
     await db.createCollection("products");
 
     console.log("Collection 'products' created successfully");
+    // transform products before inserting
+    const updatedProducts = products.map((product) => {
+        product.Reviews = product.Reviews.map((review) => {
+            review.ReviewUrl = `/products/${product.Id}/reviews/`;
+            return review;
+        });
+
+        return lowerCaseKeys(product);
+    });
+
     // insert all products
-    const result = await db.collection("products").insertMany(products);
+    const result = await db.products.insertMany(updatedProducts);
 
     console.log(
       `${result.insertedCount} new listing(s) created with the following id(s):`,
