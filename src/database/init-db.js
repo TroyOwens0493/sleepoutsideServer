@@ -20,6 +20,7 @@ const init = async () => {
     await client.connect();
     console.log(`Connected to MongoDB`);
     // get a reference to the actual database we will be using with .db(<database name>)
+    const db = client.db(databaseName);
 
     // initialize the Products collection
     await seedProducts(db);
@@ -30,7 +31,6 @@ const init = async () => {
   }
 };
 
-const db = client.db(databaseName);
 
 const lowerCaseKeys = function (obj) {
   // if it is an object, but NOT an array, then we need to iterate through all of its keys
