@@ -65,33 +65,23 @@ const seedProducts = async (db) => {
   // we need to make a small transform to the provided data before inserting
   // use .map() to transform each product before inserting it into the database
   // change Reviews.ReviewUrl to match the following pattern: /products/<productId>/reviews/
-
   // while we are at it...the data provided used a PascalCase naming convention for its keys. Use the provided lowerCaseKeys function to convert all keys to camelCase. This will make it consistent with the rest of our models.
-
+  const newProducts = products.map((product) => {
+    product.Reviews.ReviewsUrl = `/products/${product.Id}/reviews/`;
+    product = lowerCaseKeys(product);
+    return product;
+  });
   try {
     // drop the collection to clear out the old records
     await db.collection("products").drop();
-
     console.log("Collection 'products' dropped successfully");
     // create a new collection
     await db.createCollection("products");
-
     console.log("Collection 'products' created successfully");
-    // transform products before inserting
-    const updatedProducts = products.map((product) => {
-        product.Reviews = product.Reviews.map((review) => {
-            review.ReviewUrl = `/products/${product.Id}/reviews/`;
-            return review;
-        });
-
-        return lowerCaseKeys(product);
-    });
-
     // insert all products
-    const result = await db.products.insertMany(updatedProducts);
-
+    const result = await db.collection("products").insertMany(newProducts);
     console.log(
-      `${result.insertedCount} new listing(s) created with the following id(s):`,
+      `${result.insertedCount} new listing(s) created with the following id(s):`
     );
     console.log(result.insertedIds);
   } catch (error) {
