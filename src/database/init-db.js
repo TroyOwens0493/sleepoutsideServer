@@ -1,5 +1,6 @@
 // import MongoClient and ServerApiVersion from the mongodb library and import products from the products.js file.
 import { MongoClient, ServerApiVersion } from "mongodb";
+import { products } from "./products.js";
 //build the uri for our connection string
 const uri = process.env.MONGO_URI || "";
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -70,14 +71,15 @@ const seedProducts = async (db) => {
 
     try {
         // drop the collection to clear out the old records
-        db.products.drop();
+        await db.products.drop();
 
         console.log("Collection 'products' dropped successfully");
         // create a new collection
-        db.createCollection("products")
+        await db.createCollection("products")
 
         console.log("Collection 'products' created successfully");
         // insert all products
+        await db.products.insertMany(products);
 
         console.log(
             `${result.insertedCount} new listing(s) created with the following id(s):`,
