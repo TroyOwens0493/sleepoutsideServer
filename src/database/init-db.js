@@ -10,6 +10,10 @@ const client = new MongoClient(uri, {
     deprecationErrors: true,
   },
 });
+
+//database name
+
+const databaseName = MONGO_DATABASE;
 //define the init function to connect to our database and create collections
 const init = async () => {
   try {
@@ -25,6 +29,8 @@ const init = async () => {
     await client.close();
   }
 };
+
+const db = client.db(databaseName);
 
 const lowerCaseKeys = function (obj) {
   // if it is an object, but NOT an array, then we need to iterate through all of its keys
