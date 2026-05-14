@@ -79,7 +79,7 @@ const seedProducts = async (db) => {
 
         console.log("Collection 'products' created successfully");
         // insert all products
-        await db.products.insertMany(products);
+        const result = await db.products.insertMany(products);
 
         console.log(
             `${result.insertedCount} new listing(s) created with the following id(s):`,
