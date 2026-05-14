@@ -1,9 +1,15 @@
 // import MongoClient and ServerApiVersion from the mongodb library and import products from the products.js file.
-import { MongoClient, ServerApiVersion } from 'mongodb';
+import { MongoClient, ServerApiVersion } from "mongodb";
 //build the uri for our connection string
 const uri = process.env.MONGO_URI || "";
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
-
+const client = new MongoClient(uri, {
+  serverApi: {
+    version: ServerApiVersion.v1,
+    strict: true,
+    deprecationErrors: true,
+  },
+});
 //define the init function to connect to our database and create collections
 const init = async () => {
   try {
