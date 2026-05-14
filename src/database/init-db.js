@@ -1,5 +1,5 @@
 // import MongoClient and ServerApiVersion from the mongodb library and import products from the products.js file.
-
+import { MongoClient, ServerApiVersion } from 'mongodb';
 //build the uri for our connection string
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
