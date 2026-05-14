@@ -70,6 +70,7 @@ const seedProducts = async (db) => {
 
     try {
         // drop the collection to clear out the old records
+        db.products.drop();
 
         console.log("Collection 'products' dropped successfully");
         // create a new collection
