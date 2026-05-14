@@ -74,6 +74,7 @@ const seedProducts = async (db) => {
 
         console.log("Collection 'products' dropped successfully");
         // create a new collection
+        db.createCollection("products")
 
         console.log("Collection 'products' created successfully");
         // insert all products
