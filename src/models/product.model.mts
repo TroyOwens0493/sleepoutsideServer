@@ -3,22 +3,21 @@ import mongodb from "../database/index.mts";
 import type { Product } from "./types.mts";
 import type { FindProductObj } from "./types.mts";
 
-async function getAllProducts(query: FindProductObj): Promise<{
-    count: number;
-    next: string | null;
-    previous: string | null;
-    data: Product[],
-}> {
+export async function getAllProducts(find: FindProductObj) {
     const productsCollection: Collection<Product> = mongodb.getDb().collection<Product>('products');
-    const matchingCount = await productsCollection.countDocuments({ query });
-    const res = productsCollection.find({ query });
-    const data = res.project(query.fieldFilters);
-    const dataArray = await data.toArray();
-    return {
-        count: matchingCount,
-        data: dataArray,
-    };
+
+    const totalCount = await productsCollection.countDocuments(find.search);
+    const cursor = await productsCollection.find(find.search).skip(find.offset).limit(find.limit);
+
+    if (find.fieldFilters) {
+        cursor.project(find.fieldFilters);
+    }
+
+    const results = await cursor.toArray();
+    console.log(totalCount, results)
+    return { results, totalCount };
 }
+
 async function getProductById(id: string): Promise<Product | null> {
     const product = await mongodb
         .getDb()
