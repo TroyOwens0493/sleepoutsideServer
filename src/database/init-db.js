@@ -82,7 +82,7 @@ const seedProducts = async (db) => {
     await db.collection("products").createIndex({ id: 1 });
 
     console.log("Indexes created for 'products'");
-    
+
     const result = await db.collection("products").insertMany(newProducts);
     console.log(
       `${result.insertedCount} new listing(s) created with the following id(s):`,
@@ -116,10 +116,12 @@ const seedUsers = async (db) => {
   }
 };
 
-await db
-  .collection("alerts")
-  .drop()
-  .catch(() => {});
-await db.createCollection("alerts");
+const seedAlerts = async (db) => {
+  await db
+    .collection("alerts")
+    .drop()
+    .catch(() => {});
+  await db.createCollection("alerts");
+};
 
 init();
