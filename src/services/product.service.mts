@@ -2,31 +2,32 @@ import productModel from "../models/product.model.mts";
 import type { QueryParams, FindProductObj } from "../models/types.mts";
 
 const getAllProducts = async (query: QueryParams) => {
-    const findProduct: FindProductObj = {
-        search: {},
-        limit: query.limit ? parseInt(query.limit) : 20,
-        offset: query.offset ? parseInt(query.offset) : 0,
-    };
+  const findProduct: FindProductObj = {
+    search: {},
+    limit: query.limit ? parseInt(query.limit) : 20,
+    offset: query.offset ? parseInt(query.offset) : 0,
+  };
 
-    if (query.q) {
-        const find: FindProductObj = {
-            search: {
-                name: query.q,
-                descriptionHtmlSimple: query.q,
-            },
-            limit: query.limit ? parseInt(query.limit) : 20,
-            offset: query.offset ? parseInt(query.offset) : 0,
-        };
+  // Step 6: q search
+  if (query.q) {
+    findProduct.search = {
+      name: query.q,
+      descriptionHtmlSimple: query.q,
     };
+  }
 
-    return await productModel.getAllProducts();
+  if (query.category) {
+    findProduct.search.category = query.category;
+  }
+
+  return await productModel.getAllProducts(findProduct);
 };
 
 const getProductById = async (id: string) => {
-    return await productModel.getProductById(id);
+  return await productModel.getProductById(id);
 };
 
 export default {
-    getAllProducts,
-    getProductById,
+  getAllProducts,
+  getProductById,
 };
