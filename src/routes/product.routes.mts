@@ -19,7 +19,7 @@ router.get("/", async (req, res, next) => {
     return next(new EntityNotFoundError({message : 'Products Not Found',code: 'ERR_NF',
     statusCode : 404}))
   }
-  
+  //test push
   res.status(200).json(results);
   
 } catch (error) {
