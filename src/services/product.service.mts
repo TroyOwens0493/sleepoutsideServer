@@ -3,29 +3,28 @@ import type { QueryParams, FindProductObj } from "../models/types.mts";
 import { formatFields } from "./utils.mts";
 
 const getAllProducts = async (query: QueryParams) => {
-    const findProduct: FindProductObj = {
+    let find: FindProductObj = {
         search: {},
         limit: query.limit ? parseInt(query.limit) : 20,
-        offset: query.offset ? parseInt(query.offset) : 0,
-    };
+        offset: query.offset ? parseInt(query.offset) : 0
+    }
+    const { q, category, fields } = query;
 
-    // Step 6: q search
-    if (query.q) {
-        findProduct.search = {
-            name: query.q,
-            descriptionHtmlSimple: query.q,
-        };
+    find.fieldFilters = fields ? formatFields(fields) : undefined;
+    if (category) {
+        find.search.category = category;
+    }
+    if (q) {
+        find.search.name = q;
+        find.search.descriptionHtmlSimple = q;
     }
 
-    if (query.category) {
-        findProduct.search.category = query.category;
-    }
+    const data = await productModel.getAllProducts(find);
 
-    if (query.fields) {
-        findProduct.fieldFilters = formatFields(query.fields);
-    }
+    const wrapper = buildPaginationWrapper(data.totalCount, query)
 
-    return await productModel.getAllProducts(findProduct);
+    wrapper.results = data.results
+    return wrapper
 };
 
 const getProductById = async (id: string) => {
