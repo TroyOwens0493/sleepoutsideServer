@@ -1,21 +1,26 @@
 import mongodb from "../database/index.mts";
-import type {Product} from "./types.mts";
-
+import type { Product } from "./types.mts";
+import type { FindProductObj } from "./types.mts";
 
 async function getAllProducts(): Promise<Product[] | null> {
-    const data = (await mongodb.getDb().collection<Product>("products").find({}).toArray());
-    console.log(data)
-    return data ;
+  const data = await mongodb
+    .getDb()
+    .collection<Product>("products")
+    .find({})
+    .toArray();
+  console.log(data);
+  return data;
 }
 async function getProductById(id: string): Promise<Product | null> {
-    const product = await mongodb.getDb().collection<Product>("products").findOne({id: id});
-    return product;
+  const product = await mongodb
+    .getDb()
+    .collection<Product>("products")
+    .findOne({ id: id });
+  return product;
 }
-
 
 // don't forget to export the function
 export default {
   getAllProducts,
-  getProductById
-}
-
+  getProductById,
+};
