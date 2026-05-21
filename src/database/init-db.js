@@ -85,4 +85,23 @@ const seedProducts = async (db) => {
   }
 };
 
+const seedUsers = async (db) => {
+  try {
+
+    await db.collection("users").drop();
+    console.log("Collection 'users' dropped successfully");
+
+    await db.createCollection("users");
+    console.log("Collection 'users' created successfully");
+
+    const result = await db.collection("users").insertMany(users);
+    console.log(
+      `${result.insertedCount} new user(s) created with the following id(s):`
+    );
+    console.log(result.insertedIds);
+  } catch (error) {
+    console.error(error.message);
+  }
+};
+
 init();
