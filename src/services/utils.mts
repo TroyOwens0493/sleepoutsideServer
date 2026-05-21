@@ -1,12 +1,24 @@
-export function formatFields(fields: string): Record<string, 1> {
-    return Object.fromEntries(
-        fields
-            .split(",")
-            .map((field) => field.trim())
-            .filter(Boolean)
-            .map((field) => [field, 1])
-    );
+import type { QueryParams } from "../models/types.mts";
+
+export function formatFields(fields:string) {
+    const fieldsArr = fields?.split(",");
+    if(fieldsArr) {
+        const filter = fieldsArr
+        .map((field:string) => field.trim())
+        .reduce((acc: Record<string, any>, current:string) => ({ ...acc, [current]: 1 }), {});
+        // a longer form of doing this conversion
+        // let filter: Record<string, any> = {};
+        // if(fieldsArr) {
+        //     fieldsArr.forEach((field:string) => {
+        //      filter[field.trim()] = 1
+        //     })      
+        // };
+        console.log("formatFields:",filter)
+        return filter
+    }
 }
+
+
 
 export function buildPaginationWrapper(totalCount:number, query:QueryParams) {
   // here we check to see if there is a limit...if yes convert it to a number, if no set it to the default of 20
