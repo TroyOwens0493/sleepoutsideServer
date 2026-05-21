@@ -27,6 +27,7 @@
   },
   "dependencies": {
     "@types/cors": "^2.8.19",
+    "argon2": "^0.44.0",
     "cors": "^2.8.6",
     "express": "^5.1.0",
     "express-rate-limit": "^8.2.1",

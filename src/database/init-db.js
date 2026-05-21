@@ -1,4 +1,5 @@
 // import MongoClient and ServerApiVersion from the mongodb library and import products from the products.js file.
+import * as argon2 from "argon2";
 import { MongoClient, ServerApiVersion } from "mongodb";
 import { products } from "./products.js";
 //build the uri for our connection string
@@ -77,7 +78,7 @@ const seedProducts = async (db) => {
     // insert all products
     const result = await db.collection("products").insertMany(newProducts);
     console.log(
-      `${result.insertedCount} new listing(s) created with the following id(s):`
+      `${result.insertedCount} new listing(s) created with the following id(s):`,
     );
     console.log(result.insertedIds);
   } catch (error) {
@@ -87,7 +88,6 @@ const seedProducts = async (db) => {
 
 const seedUsers = async (db) => {
   try {
-
     await db.collection("users").drop();
     console.log("Collection 'users' dropped successfully");
 
@@ -96,12 +96,18 @@ const seedUsers = async (db) => {
 
     const result = await db.collection("users").insertMany(users);
     console.log(
-      `${result.insertedCount} new user(s) created with the following id(s):`
+      `${result.insertedCount} new user(s) created with the following id(s):`,
     );
     console.log(result.insertedIds);
   } catch (error) {
     console.error(error.message);
   }
 };
+
+await db
+  .collection("alerts")
+  .drop()
+  .catch(() => {});
+await db.createCollection("alerts");
 
 init();
