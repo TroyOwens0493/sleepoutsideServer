@@ -76,6 +76,13 @@ const seedProducts = async (db) => {
     await db.createCollection("products");
     console.log("Collection 'products' created successfully");
     // insert all products
+    await db.collection("products").createIndex({ name: 1 });
+    await db.collection("products").createIndex({ description: 1 });
+    await db.collection("products").createIndex({ category: 1 });
+    await db.collection("products").createIndex({ id: 1 });
+
+    console.log("Indexes created for 'products'");
+    
     const result = await db.collection("products").insertMany(newProducts);
     console.log(
       `${result.insertedCount} new listing(s) created with the following id(s):`,
@@ -93,6 +100,11 @@ const seedUsers = async (db) => {
 
     await db.createCollection("users");
     console.log("Collection 'users' created successfully");
+
+    await db.collection("users").createIndex({ name: 1 });
+    await db.collection("users").createIndex({ email: 1 });
+
+    console.log("Indexes created for 'users'");
 
     const result = await db.collection("users").insertMany(users);
     console.log(
