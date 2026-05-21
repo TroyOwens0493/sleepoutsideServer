@@ -2,6 +2,7 @@
 import * as argon2 from "argon2";
 import { MongoClient, ServerApiVersion } from "mongodb";
 import { products } from "./products.js";
+import { users } from "./users.js";
 //build the uri for our connection string
 const uri = process.env.MONGO_URI || "";
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
