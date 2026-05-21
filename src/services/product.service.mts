@@ -1,7 +1,7 @@
 import productModel from "../models/product.model.mts";
+import type {QueryParams} from "../models/types.mts";
 
-
- const getAllProducts = async () => {
+ const getAllProducts = async (query: QueryParams) => {
   return await productModel.getAllProducts();
 };
 

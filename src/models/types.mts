@@ -190,3 +190,11 @@ export interface FindProductObj {
   offset: number,
   fieldFilters?: Projection<Product>
 }
+
+export interface QueryParams {
+  category?: string;
+  q?:string;
+  limit?: string;
+  offset?: string;
+  fields?: string;
+}
