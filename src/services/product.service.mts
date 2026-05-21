@@ -1,6 +1,6 @@
 import productModel from "../models/product.model.mts";
 import type { QueryParams, FindProductObj } from "../models/types.mts";
-import { formatFields } from "./utils.mts";
+import { buildPaginationWrapper, formatFields } from "./utils.mts";
 
 const getAllProducts = async (query: QueryParams) => {
     let find: FindProductObj = {
