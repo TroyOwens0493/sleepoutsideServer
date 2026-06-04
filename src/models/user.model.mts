@@ -6,4 +6,5 @@ async function getUSerByEmail(email: string) {
     .getDb()
     .collection<User>("users")
     .findOne({ email: email });
+  return user;
 }
