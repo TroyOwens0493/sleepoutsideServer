@@ -126,8 +126,7 @@ export const ProductSchema = {
   ]
 };
 
-// User schema
-export const UserSchema = {
+export const UserSchema: JSONSchema7 = {
   $schema: "http://json-schema.org/draft-07/schema#",
   title: "User",
   description: "",
