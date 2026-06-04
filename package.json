@@ -17,6 +17,7 @@
   "license": "ISC",
   "devDependencies": {
     "@types/express": "^5.0.5",
+    "@types/json-schema": "^7.0.15",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/morgan": "^1.9.10",
     "@types/node": "^22.13.9",
