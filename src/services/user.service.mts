@@ -5,7 +5,7 @@ import { generateToken, validator } from "./utils.mts";
 import Ajv from "ajv";
 import addFormats from "ajv-formats";
 import addKeywords from "ajv-keywords";
-import { UserSchema } from "../database/json-schema.ts";
+import { UserSchema } from "../database/json-schema.mts";
 import EntityNotFoundError from "../errors/EntityNotFoundError.mts";
 
 // for some reason typescript doesn't like this even though it is exactly how the documentation says to use these. We are just going to ignore the types for now
