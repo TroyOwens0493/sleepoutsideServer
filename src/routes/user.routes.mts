@@ -2,7 +2,7 @@ import {Router } from "express";
 import userService from "../services/user.service.mts";
 import EntityNotFoundError from "../errors/EntityNotFoundError.mts";
 import { sanitize } from "../services/utils.mts";
-import  authorize from "../middleware/authorize.mts"
+import  authorize from "../middleware/authorize.mts";
 
 const router: Router = Router();
 
