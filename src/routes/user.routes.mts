@@ -2,6 +2,7 @@ import {Router } from "express";
 import userService from "../services/user.service.mts";
 import EntityNotFoundError from "../errors/EntityNotFoundError.mts";
 import { sanitize } from "../services/utils.mts";
+import  authorize from "../middleware/authorize.mts"
 
 const router: Router = Router();
 
@@ -16,7 +17,6 @@ router.post('/login', async (req, res, next) => {
   // the service function should return a valid user and token  or null for either
     const results = await userService.login(email, password);
     console.log(results)
-    
     // forward a 401 error if either is null
    if(!results.token || !results.user) {
     return next(new EntityNotFoundError({message : 'User Not Found or bad password',code: 'ERR_NF',
