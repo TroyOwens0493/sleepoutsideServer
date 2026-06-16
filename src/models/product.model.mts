@@ -9,10 +9,19 @@ export async function getAllProducts(find: FindProductObj) {
         .getDb()
         .collection<Product>("products");
 
-    const totalCount = await productsCollection.countDocuments(find.search);
+    let search = find.search;
+    if (!find.strict) {
+        search = {
+            $or: Object.entries(find.search).map(([key, value]) => ({
+                [key]: { $regex: value, $options: "i" },
+            })),
+        };
+    }
+
+    const totalCount = await productsCollection.countDocuments(search);
 
     const cursor = productsCollection
-        .find(find.search)
+        .find(search)
         .skip(find.offset)
         .limit(find.limit);
 
