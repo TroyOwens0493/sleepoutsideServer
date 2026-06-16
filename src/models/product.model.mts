@@ -1,4 +1,4 @@
-import type { Collection } from "mongodb";
+import type { Collection, Filter } from "mongodb";
 import mongodb from "../database/index.mts";
 import type { Product, FindProductObj } from "./types.mts";
 
@@ -9,7 +9,7 @@ export async function getAllProducts(find: FindProductObj) {
         .getDb()
         .collection<Product>("products");
 
-    let search = find.search;
+    let search: Filter<Product> = find.search;
     if (!find.strict) {
         search = {
             $or: Object.entries(find.search).map(([key, value]) => ({
