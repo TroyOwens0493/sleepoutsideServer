@@ -1,4 +1,4 @@
-import type { Collection } from "mongodb";
+import type { Collection, Filter } from "mongodb";
 import mongodb from "../database/index.mts";
 import type { Product, FindProductObj } from "./types.mts";
 
@@ -9,10 +9,19 @@ export async function getAllProducts(find: FindProductObj) {
         .getDb()
         .collection<Product>("products");
 
-    const totalCount = await productsCollection.countDocuments(find.search);
+    let search: Filter<Product> = find.search;
+    if (!find.strict) {
+        search = {
+            $or: Object.entries(find.search).map(([key, value]) => ({
+                [key]: { $regex: value, $options: "i" },
+            })),
+        };
+    }
+
+    const totalCount = await productsCollection.countDocuments(search);
 
     const cursor = productsCollection
-        .find(find.search)
+        .find(search)
         .skip(find.offset)
         .limit(find.limit);
 

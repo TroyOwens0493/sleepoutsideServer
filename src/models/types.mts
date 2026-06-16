@@ -196,7 +196,8 @@ export interface FindProductObj {
   },
   limit: number,
   offset: number,
-  fieldFilters?: Projection<Product>
+  fieldFilters?: Projection<Product>,
+  strict: boolean
 }
 
 export interface QueryParams {
