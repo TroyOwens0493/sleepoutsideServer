@@ -6,7 +6,8 @@ const getAllProducts = async (query: QueryParams) => {
     let find: FindProductObj = {
         search: {},
         limit: query.limit ? parseInt(query.limit) : 20,
-        offset: query.offset ? parseInt(query.offset) : 0
+        offset: query.offset ? parseInt(query.offset) : 0,
+        strict: true,
     }
     const { q, category, fields } = query;
 
@@ -17,6 +18,8 @@ const getAllProducts = async (query: QueryParams) => {
     if (q) {
         find.search.name = q;
         find.search.descriptionHtmlSimple = q;
+        find.search.category = q;
+        find.strict = false;
     }
 
     const data = await productModel.getAllProducts(find);
