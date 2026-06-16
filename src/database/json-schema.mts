@@ -441,6 +441,31 @@ export const OrderSchema = {
   ]
 };
 
+// Newsletter schema
+export const NewsletterSchema: JSONSchema7 = {
+  $schema: "http://json-schema.org/draft-07/schema#",
+  title: "NewsletterSubscriber",
+  description: "",
+  type: "object",
+  properties: {
+    _id: { type: "string" },
+    name: {
+      type: "string",
+      minLength: 2,
+      maxLength: 50,
+      description:
+        "The name of the subscriber, must be at least two characters long and no more than 50 characters long"
+    },
+    email: {
+      type: "string",
+      format: "email",
+      description: "The email address of the subscriber, must be a valid email"
+    },
+    createdAt: { instanceof: "Date" }
+  },
+  required: ["name", "email", "createdAt"]
+};
+
 // Alert schema
 export const AlertSchema = {
   $schema: "http://json-schema.org/draft-07/schema#",

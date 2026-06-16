@@ -164,6 +164,14 @@ export interface Order {
   taxAmount: number;
 }
 
+// Newsletter schema
+export interface NewsletterSubscriber {
+  _id?: string;
+  name: string;
+  email: string;
+  createdAt: Date;
+}
+
 // Alert schema
 export interface Alert {
   _id: string;
