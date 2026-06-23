@@ -206,3 +206,12 @@ export interface QueryParams {
   offset?: string;
   fields?: string;
 }
+
+export interface ProductReview {
+  _id?: string;
+  productId: string;
+  name: string;
+  rating: number;
+  review: string;
+  createdAt: Date;
+}
