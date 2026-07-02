@@ -1,18 +1,25 @@
-import type { Collection } from "mongodb";
+import type { Collection, Filter, WithId } from "mongodb";
 import mongodb from "../database/index.mts";
 import type { Product, FindProductObj } from "./types.mts";
 
 const baseURL = process.env.PUBLIC_SERVER_URL || "";
 
-export async function getAllProducts(find: FindProductObj) {
+export async function getAllProducts(): Promise<WithId<Product>[]>;
+export async function getAllProducts(find: FindProductObj): Promise<{ results: WithId<Product>[]; totalCount: number }>;
+export async function getAllProducts(find?: FindProductObj) {
     const productsCollection: Collection<Product> = mongodb
         .getDb()
         .collection<Product>("products");
+    const search = (find?.search || {}) as Filter<Product>;
 
-    const totalCount = await productsCollection.countDocuments(find.search);
+    if (!find) {
+        return productsCollection.find(search).toArray();
+    }
+
+    const totalCount = await productsCollection.countDocuments(search);
 
     const cursor = productsCollection
-        .find(find.search)
+        .find(search)
         .skip(find.offset)
         .limit(find.limit);
 
