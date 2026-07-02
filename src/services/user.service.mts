@@ -54,7 +54,28 @@ async function register(email: string, password: string, name: string) {
   return userModel.createUser(newUser);
 }
 
+async function changePassword(email: string, currentPassword: string, newPassword: string) {
+  if (!newPassword || newPassword.length < 6) {
+    throw new EntityNotFoundError({
+      message: "New password must be at least six characters long",
+      statusCode: 400,
+    });
+  }
+
+  const user = await userModel.getUserByEmail(email);
+  if (!user || !(await argon2.verify(user.password, currentPassword))) {
+    throw new EntityNotFoundError({
+      message: "Current password is incorrect",
+      statusCode: 401,
+    });
+  }
+
+  const hashedPassword = await argon2.hash(newPassword);
+  return userModel.updatePassword(email, hashedPassword);
+}
+
 export default {
   login,
   register,
+  changePassword,
 };

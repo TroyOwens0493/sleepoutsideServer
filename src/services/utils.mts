@@ -4,6 +4,7 @@ import Ajv from "ajv";
 import addFormats from "ajv-formats"
 import addKeywords from "ajv-keywords"
 import type { JSONSchema7 } from "json-schema"
+import EntityNotFoundError from "../errors/EntityNotFoundError.mts";
 
 export function validator(schema:JSONSchema7 , data:Object) {
     // for some reason typescript doesn't like this even though it is exactly how the documentation says to use these. We are just going to ignore the types for now 🤷🏻‍♂️

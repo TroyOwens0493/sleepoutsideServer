@@ -43,6 +43,27 @@ router.post("/", async (req,res,next) => {
  
 })
 
+router.post("/change-password", authorize, async (req, res, next) => {
+    try {
+        const cleanBody = sanitize(req.body);
+        const { currentPassword, newPassword } = cleanBody;
+        const email = res.locals.user?.email;
+
+        if (!email) {
+            return next(new EntityNotFoundError({
+                message: "Unauthorized",
+                code: "ERR_NF",
+                statusCode: 401
+            }));
+        }
+
+        await userService.changePassword(email, currentPassword, newPassword);
+        res.status(200).json({ message: "Password updated successfully" });
+    } catch(err) {
+        next(err)
+    }
+})
+
 router.get('/protected', authorize, (req, res) => {
     console.log(res.locals.user)
   res.json({ message: `Hello, ${res.locals.user.email}!` });
