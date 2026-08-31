@@ -1,129 +1,104 @@
-// Load environment variables for tests
-import "dotenv/config";
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
-// Import test helpers from vitest
-import { describe, it, expect, vi, beforeAll, afterAll } from "vitest";
+const cursor = {
+  skip: vi.fn(),
+  limit: vi.fn(),
+  project: vi.fn(),
+  toArray: vi.fn(),
+};
+const collection = {
+  countDocuments: vi.fn(),
+  find: vi.fn(),
+};
 
-// Mock the database module so tests don't require a live MongoDB instance.
-// The mock implements the minimal API used by the model: `initDb`, `getDb`, and `closeDb`.
-vi.mock("../../src/database/index.mts", () => {
-  // in-memory store for collections
-  const collections = {
-    products: [
-      {
-        id: "880RR",
-        nameWithoutBrand: "Ajax Tent - 3-Person, 3-Season",
-        name: "Marmot Ajax Tent - 3-Person, 3-Season",
-        image:
-          "../images/tents/marmot-ajax-tent-3-person-3-season-in-pale-pumpkin-terracotta~p~880rr_01~320.jpg",
+vi.mock("../../src/database/index.mts", () => ({
+  default: {
+    getDb: () => ({ collection: () => collection }),
+  },
+}));
 
-        sizesAvailable: {},
-        colors: [
-          {
-            colorCode: "01",
-            colorName: "Pale Pumpkin/Terracotta"
-          }
-        ],
-        descriptionHtmlSimple:
-          "Get out and enjoy nature with Marmot&#39;s Ajax tent, featuring a smart design with durable, waterproof construction and two doors for easy access.",
-        suggestedRetailPrice: 300.0,
-        brand: {
-          id: "1308",
-          logoSrc: "../images/logos/marmot-160x100.jpg",
-          name: "Marmot"
-        },
-        listPrice: 199.99,
-        finalPrice: 199.99
-      }
-    ]
-  };
-
-  return {
-    default: {
-      initDb: (cb) => cb && cb(null),
-      getDb: () => ({
-        collection: (name) => ({
-          find: (query) => ({
-            toArray: async () => collections[name] || []
-          }),
-          deleteMany: async (q) => {
-            collections[name] = [];
-            return { deletedCount: 0 };
-          }
-        })
-      }),
-      closeDb: async () => {
-        // noop for mock
-      }
-    }
-  };
-});
-
-describe("getAllProducts", () => {
-  let mongodb;
-  let productsModel;
+describe("product search", () => {
+  let server;
+  let baseUrl;
 
   beforeAll(async () => {
-    // Import the mocked DB module and the model after the mock is registered
-    mongodb = (await import("../../src/database/index.mts")).default;
-    productsModel = (await import("../../src/models/product.model.mts"))
-      .default;
+    const app = (await import("../../src/app.ts")).default;
+    server = app.listen(0);
+    await new Promise((resolve) => server.once("listening", resolve));
+    const address = server.address();
+    baseUrl = `http://127.0.0.1:${address.port}/api/v1/products/`;
+  });
 
-    // call initDb (mocked)
-    await new Promise((resolve, reject) => {
-      mongodb.initDb((err) => (err ? reject(err) : resolve(null)));
+  afterAll(() => new Promise((resolve) => server.close(resolve)));
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    cursor.skip.mockReturnValue(cursor);
+    cursor.limit.mockReturnValue(cursor);
+    cursor.project.mockReturnValue(cursor);
+    cursor.toArray.mockResolvedValue([{ id: "880RR", name: "Marmot Ajax Tent" }]);
+    collection.countDocuments.mockResolvedValue(1);
+    collection.find.mockReturnValue(cursor);
+  });
+
+  it("returns case-insensitive matches across product fields", async () => {
+    const response = await fetch(`${baseUrl}?q=Ajax`);
+    const result = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(collection.find).toHaveBeenCalledWith({
+      $or: [
+        { name: { $regex: "Ajax", $options: "i" } },
+        { nameWithoutBrand: { $regex: "Ajax", $options: "i" } },
+        { descriptionHtmlSimple: { $regex: "Ajax", $options: "i" } },
+        { category: { $regex: "Ajax", $options: "i" } },
+      ],
     });
+    expect(result.results).toEqual([{ id: "880RR", name: "Marmot Ajax Tent" }]);
   });
 
-  afterAll(async () => {
-    try {
-      await mongodb.closeDb();
-    } catch (e) {
-      // ignore
-    }
+  it("keeps category as a required filter when searching within a category", async () => {
+    await fetch(`${baseUrl}?category=tents&q=three%20season`);
+
+    expect(collection.find).toHaveBeenCalledWith(
+      expect.objectContaining({ category: "tents", $or: expect.any(Array) }),
+    );
   });
 
-  it("should return an array of products", async () => {
-    const data = await productsModel.getAllProducts();
+  it("treats regular-expression characters as literal search text", async () => {
+    await fetch(`${baseUrl}?q=tent.*`);
 
-    expect(data).toEqual([
-      {
-        id: "880RR",
-        nameWithoutBrand: "Ajax Tent - 3-Person, 3-Season",
-        name: "Marmot Ajax Tent - 3-Person, 3-Season",
-        image:
-          "../images/tents/marmot-ajax-tent-3-person-3-season-in-pale-pumpkin-terracotta~p~880rr_01~320.jpg",
-
-        sizesAvailable: {},
-        colors: [
-          {
-            colorCode: "01",
-            colorName: "Pale Pumpkin/Terracotta"
-          }
-        ],
-        descriptionHtmlSimple:
-          "Get out and enjoy nature with Marmot&#39;s Ajax tent, featuring a smart design with durable, waterproof construction and two doors for easy access.",
-        suggestedRetailPrice: 300.0,
-        brand: {
-          id: "1308",
-          logoSrc: "../images/logos/marmot-160x100.jpg",
-          name: "Marmot"
-        },
-        listPrice: 199.99,
-        finalPrice: 199.99
-      }
-    ]);
-    // toBeInstanceOf(Array);
+    expect(collection.find).toHaveBeenCalledWith(
+      expect.objectContaining({
+        $or: expect.arrayContaining([
+          { name: { $regex: "tent\\.\\*", $options: "i" } },
+        ]),
+      }),
+    );
   });
 
-  it("should return an empty list if no documents are found in the database", async () => {
-    // clear out any existing test data via mocked collection
-    const collection = (await import("../../src/database/index.mts")).default
-      .getDb()
-      .collection("products");
-    await collection.deleteMany({});
+  it("applies pagination and field selection while preserving search parameters", async () => {
+    collection.countDocuments.mockResolvedValue(25);
 
-    const data = await productsModel.getAllProducts();
-    expect(data).toEqual([]);
+    const response = await fetch(`${baseUrl}?q=tent&limit=10&offset=10&fields=id,name`);
+    const result = await response.json();
+
+    expect(cursor.skip).toHaveBeenCalledWith(10);
+    expect(cursor.limit).toHaveBeenCalledWith(10);
+    expect(cursor.project).toHaveBeenCalledWith({ id: 1, name: 1 });
+    expect(result).toMatchObject({ count: 25 });
+    expect(result.prev).toContain("q=tent");
+    expect(result.next).toContain("offset=20");
+  });
+
+  it("returns a successful empty result when no products match", async () => {
+    collection.countDocuments.mockResolvedValue(0);
+    cursor.toArray.mockResolvedValue([]);
+
+    const response = await fetch(`${baseUrl}?q=does-not-exist`);
+    const result = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(result).toMatchObject({ count: 0, results: [] });
   });
 });
