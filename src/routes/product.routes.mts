@@ -11,16 +11,6 @@ router.get("/", async (req, res, next) => {
 
         const results = await productService.getAllProducts(cleanQuery);
 
-        if (results.count === 0) {
-            return next(
-                new EntityNotFoundError({
-                    message: "Products Not Found",
-                    code: "ERR_NF",
-                    statusCode: 404,
-                })
-            );
-        }
-
         res.status(200).json(results);
     } catch (error) {
         next(error);

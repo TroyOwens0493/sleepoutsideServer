@@ -1,5 +1,11 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
+const cursor = {
+  skip: vi.fn(),
+  limit: vi.fn(),
+  project: vi.fn(),
+  toArray: vi.fn(),
+};
 const collection = {
   countDocuments: vi.fn(),
   find: vi.fn(),
@@ -12,25 +18,34 @@ vi.mock("../../src/database/index.mts", () => ({
 }));
 
 describe("product search", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-    collection.countDocuments.mockResolvedValue(1);
-    collection.find.mockReturnValue({
-      skip: () => ({
-        limit: () => ({
-          project: vi.fn(),
-          toArray: async () => [{ id: "880RR", name: "Marmot Ajax Tent" }],
-        }),
-      }),
-    });
+  let server;
+  let baseUrl;
+
+  beforeAll(async () => {
+    const app = (await import("../../src/app.ts")).default;
+    server = app.listen(0);
+    await new Promise((resolve) => server.once("listening", resolve));
+    const address = server.address();
+    baseUrl = `http://127.0.0.1:${address.port}/api/v1/products/`;
   });
 
-  it("builds a case-insensitive text search across product fields", async () => {
-    const productService = (await import("../../src/services/product.service.mts"))
-      .default;
+  afterAll(() => new Promise((resolve) => server.close(resolve)));
 
-    const result = await productService.getAllProducts({ q: "Ajax" });
+  beforeEach(() => {
+    vi.clearAllMocks();
+    cursor.skip.mockReturnValue(cursor);
+    cursor.limit.mockReturnValue(cursor);
+    cursor.project.mockReturnValue(cursor);
+    cursor.toArray.mockResolvedValue([{ id: "880RR", name: "Marmot Ajax Tent" }]);
+    collection.countDocuments.mockResolvedValue(1);
+    collection.find.mockReturnValue(cursor);
+  });
 
+  it("returns case-insensitive matches across product fields", async () => {
+    const response = await fetch(`${baseUrl}?q=Ajax`);
+    const result = await response.json();
+
+    expect(response.status).toBe(200);
     expect(collection.find).toHaveBeenCalledWith({
       $or: [
         { name: { $regex: "Ajax", $options: "i" } },
@@ -43,10 +58,7 @@ describe("product search", () => {
   });
 
   it("keeps category as a required filter when searching within a category", async () => {
-    const productService = (await import("../../src/services/product.service.mts"))
-      .default;
-
-    await productService.getAllProducts({ category: "tents", q: "three season" });
+    await fetch(`${baseUrl}?category=tents&q=three%20season`);
 
     expect(collection.find).toHaveBeenCalledWith(
       expect.objectContaining({ category: "tents", $or: expect.any(Array) }),
@@ -54,10 +66,7 @@ describe("product search", () => {
   });
 
   it("treats regular-expression characters as literal search text", async () => {
-    const productService = (await import("../../src/services/product.service.mts"))
-      .default;
-
-    await productService.getAllProducts({ q: "tent.*" });
+    await fetch(`${baseUrl}?q=tent.*`);
 
     expect(collection.find).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -66,5 +75,30 @@ describe("product search", () => {
         ]),
       }),
     );
+  });
+
+  it("applies pagination and field selection while preserving search parameters", async () => {
+    collection.countDocuments.mockResolvedValue(25);
+
+    const response = await fetch(`${baseUrl}?q=tent&limit=10&offset=10&fields=id,name`);
+    const result = await response.json();
+
+    expect(cursor.skip).toHaveBeenCalledWith(10);
+    expect(cursor.limit).toHaveBeenCalledWith(10);
+    expect(cursor.project).toHaveBeenCalledWith({ id: 1, name: 1 });
+    expect(result).toMatchObject({ count: 25 });
+    expect(result.prev).toContain("q=tent");
+    expect(result.next).toContain("offset=20");
+  });
+
+  it("returns a successful empty result when no products match", async () => {
+    collection.countDocuments.mockResolvedValue(0);
+    cursor.toArray.mockResolvedValue([]);
+
+    const response = await fetch(`${baseUrl}?q=does-not-exist`);
+    const result = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(result).toMatchObject({ count: 0, results: [] });
   });
 });
