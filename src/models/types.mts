@@ -189,15 +189,10 @@ type Projection<T> = {
 
 
 export interface FindProductObj {
-  search: {
-    name?:string,
-    descriptionHtmlSimple?:string,
-    category?:string,
-  },
+  search: import("mongodb").Filter<Product>,
   limit: number,
   offset: number,
-  fieldFilters?: Projection<Product>,
-  strict: boolean
+  fieldFilters?: Projection<Product>
 }
 
 export interface QueryParams {
